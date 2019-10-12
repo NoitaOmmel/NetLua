@@ -24,10 +24,10 @@ namespace NetLua
             Terminal Number = new NumberLiteral("number", NumberOptions.AllowSign);
 
             Terminal LineComment = new CommentTerminal("Comment", "--", "\n", "\r");
-            Terminal LongComment = new CommentTerminal("LongComment", "--[[", "]]");
+			Terminal LongComment = new CommentTerminal("LongComment", "--[[", "]]");
 
-            base.NonGrammarTerminals.Add(LineComment);
             base.NonGrammarTerminals.Add(LongComment);
+            base.NonGrammarTerminals.Add(LineComment);
             #endregion
 
             #region Nonterminals

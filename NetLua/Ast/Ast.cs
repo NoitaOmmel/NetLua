@@ -22,6 +22,7 @@
  */
 
 using System.Collections.Generic;
+using Irony.Parsing;
 
 namespace NetLua.Ast
 {
@@ -53,6 +54,7 @@ namespace NetLua.Ast
 
     public interface IVisitable
     {
+		SourceSpan Span { get; set; }
         void Accept(IVisitor visitor);
     }
 
@@ -93,6 +95,7 @@ namespace NetLua.Ast
         // Prefix.Name
         public IExpression Prefix;
         public string Name;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -103,11 +106,13 @@ namespace NetLua.Ast
     public class Argument
     {
         public string Name;
+		public SourceSpan Span { get; set; }
     }
 
     public class StringLiteral : IExpression
     {
         public string Value;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -118,6 +123,7 @@ namespace NetLua.Ast
     public class NumberLiteral : IExpression
     {
         public double Value;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -127,6 +133,7 @@ namespace NetLua.Ast
 
     public class NilLiteral : IExpression
     {
+		public SourceSpan Span { get; set; }
         public void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -136,6 +143,7 @@ namespace NetLua.Ast
     public class BoolLiteral : IExpression
     {
         public bool Value;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -145,6 +153,7 @@ namespace NetLua.Ast
 
     public class VarargsLiteral : IExpression
     {
+		public SourceSpan Span { get; set; }
         public void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -155,6 +164,7 @@ namespace NetLua.Ast
     {
         public IExpression Function;
         public List<IExpression> Arguments = new List<IExpression>();
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -167,6 +177,7 @@ namespace NetLua.Ast
         // Expression[Index]
         public IExpression Expression;
         public IExpression Index;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -179,6 +190,7 @@ namespace NetLua.Ast
         // function(Arguments) Body end
         public List<Argument> Arguments = new List<Argument>();
         public Block Body;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -190,6 +202,7 @@ namespace NetLua.Ast
     {
         public IExpression Left, Right;
         public BinaryOp Operation;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -201,6 +214,7 @@ namespace NetLua.Ast
     {
         public IExpression Expression;
         public UnaryOp Operation;
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -211,6 +225,7 @@ namespace NetLua.Ast
     public class TableConstructor : IExpression
     {
         public Dictionary<IExpression, IExpression> Values = new Dictionary<IExpression,IExpression>();
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -226,6 +241,7 @@ namespace NetLua.Ast
 
         public List<IAssignable> Variables = new List<IAssignable>();
         public List<IExpression> Expressions = new List<IExpression>();
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -236,6 +252,7 @@ namespace NetLua.Ast
     public class ReturnStat : IStatement
     {
         public List<IExpression> Expressions = new List<IExpression>();
+		public SourceSpan Span { get; set; }
 
         public void Accept(IVisitor visitor)
         {
@@ -245,6 +262,7 @@ namespace NetLua.Ast
 
     public class BreakStat : IStatement
     {
+		public SourceSpan Span { get; set; }
         public void Accept(IVisitor visitor)
         {
             visitor.Visit(this);
@@ -253,6 +271,7 @@ namespace NetLua.Ast
 
     public class LocalAssignment : IStatement
     {
+		public SourceSpan Span { get; set; }
         public List<string> Names = new List<string>();
         public List<IExpression> Values = new List<IExpression>();
 
@@ -264,6 +283,7 @@ namespace NetLua.Ast
 
     public class Block : IStatement
     {
+		public SourceSpan Span { get; set; }
         public List<IStatement> Statements = new List<IStatement>();
 
         public void Accept(IVisitor visitor)
@@ -274,6 +294,7 @@ namespace NetLua.Ast
 
     public class WhileStat : IStatement
     {
+		public SourceSpan Span { get; set; }
         public IExpression Condition;
         public Block Block;
 
@@ -285,6 +306,7 @@ namespace NetLua.Ast
 
     public class RepeatStat : IStatement
     {
+		public SourceSpan Span { get; set; }
         public Block Block;
         public IExpression Condition;
 
@@ -296,6 +318,7 @@ namespace NetLua.Ast
 
     public class NumericFor : IStatement
     {
+		public SourceSpan Span { get; set; }
         public IExpression Var, Limit, Step;
         public string Variable;
         public Block Block;
@@ -308,6 +331,7 @@ namespace NetLua.Ast
 
     public class GenericFor : IStatement
     {
+		public SourceSpan Span { get; set; }
         public List<string> Variables = new List<string>();
         public List<IExpression> Expressions = new List<IExpression>();
         public Block Block;
@@ -320,6 +344,7 @@ namespace NetLua.Ast
 
     public class IfStat : IStatement
     {
+		public SourceSpan Span { get; set; }
         public IExpression Condition;
         public Block Block;
         public List<IfStat> ElseIfs = new List<IfStat>();

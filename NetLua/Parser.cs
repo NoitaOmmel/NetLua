@@ -46,6 +46,7 @@ namespace NetLua
             if (root == null)
             {
                 Irony.LogMessage msg = parseTree.ParserMessages[0];
+
                 throw new LuaException(Filename, msg.Location.Line, msg.Location.Column, msg.Message);
             }
             return (ParseBlock(root));
@@ -63,7 +64,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParseAndOp(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = Ast.BinaryOp.Or };
+				return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = Ast.BinaryOp.Or };
             }
             throw new Exception("Invalid OrOp node");
         }
@@ -79,7 +80,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParseRelOp(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = Ast.BinaryOp.And };
+                return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = Ast.BinaryOp.And };
             }
             throw new Exception("Invalid AndOp node");
         }
@@ -115,7 +116,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParseConcatOp(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = op };
+                return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = op };
             }
             throw new Exception("Invalid RelOp node");
         }
@@ -134,7 +135,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParseAddOp(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = op };
+                return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = op };
             }
             throw new Exception("Invalid ConcatOp node");
         }
@@ -162,7 +163,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParseMulOp(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = op };
+                return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = op };
             }
             throw new Exception("Invalid AddOp node");
         }
@@ -192,7 +193,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParsePowerOp(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = op };
+                return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = op };
             }
             throw new Exception("Invalid MulOp node");
         }
@@ -209,7 +210,7 @@ namespace NetLua
                 ParseTreeNode right = node.ChildNodes[1].ChildNodes[1];
                 Ast.IExpression rexpr = ParseExpression(right);
 
-                return new Ast.BinaryExpression() { Left = lexpr, Right = rexpr, Operation = Ast.BinaryOp.Power };
+                return new Ast.BinaryExpression() { Span = node.Span, Left = lexpr, Right = rexpr, Operation = Ast.BinaryOp.Power };
             }
             throw new Exception("Invalid PowerOp node");
         }
@@ -224,6 +225,7 @@ namespace NetLua
                 Ast.FunctionCall call = new Ast.FunctionCall();
                 call.Arguments = new List<Ast.IExpression>();
                 call.Function = expr;
+				call.Span = node.Span;
 
                 var root = node.ChildNodes[1].ChildNodes[0];
                 if (root.ChildNodes.Count != 0)
@@ -252,6 +254,7 @@ namespace NetLua
                 Ast.FunctionCall call = new Ast.FunctionCall();
                 call.Arguments.Add(expr);
                 call.Function = new Ast.Variable() { Name = name, Prefix = expr };
+				call.Span = node.Span;
 
                 var root = node.ChildNodes[2].ChildNodes[0];
                 if (root.ChildNodes.Count != 0)
@@ -276,6 +279,7 @@ namespace NetLua
             if (node.Term.Name == "Assignment")
             {
                 Ast.Assignment assign = new Ast.Assignment();
+				assign.Span = node.Span;
 
                 var left = node.ChildNodes[0];
                 var right = node.ChildNodes[1];
@@ -311,7 +315,7 @@ namespace NetLua
             {
                 Ast.LocalAssignment assign = new Ast.LocalAssignment();
 
-
+				assign.Span = node.Span;
                 var child = node.ChildNodes[1];
 
                 if (child.ChildNodes[0].Term.Name == "LocalFunction")
@@ -323,6 +327,7 @@ namespace NetLua
 
                     assign.Names.Add(child.ChildNodes[1].Token.ValueString);
                     var func = new Ast.FunctionDefinition();
+					func.Span = node.Span;
 
                     if (argsNode.ChildNodes.Count > 0)
                     {
@@ -330,7 +335,7 @@ namespace NetLua
                         while (argsNode.ChildNodes.Count > 0)
                         {
                             string ident = argsNode.ChildNodes[0].Token.ValueString;
-                            func.Arguments.Add(new Ast.Argument() { Name = ident });
+							func.Arguments.Add(new Ast.Argument() { Span = argsNode.Span, Name = ident });
                             if (argsNode.ChildNodes.Count == 1)
                                 break;
                             argsNode = argsNode.ChildNodes[1];
@@ -374,6 +379,7 @@ namespace NetLua
             if (node.Term.Name == "ReturnStat")
             {
                 Ast.ReturnStat ret = new Ast.ReturnStat();
+				ret.Span = node.Span;
                 var child = node.ChildNodes[1];
                 while (child.ChildNodes.Count > 0)
                 {
@@ -402,6 +408,7 @@ namespace NetLua
 
                 return new Ast.RepeatStat()
                 {
+					Span = node.Span,
                     Block = block,
                     Condition = condition
                 };
@@ -415,6 +422,7 @@ namespace NetLua
             {
                 return new Ast.WhileStat()
                 {
+					Span = node.Span,
                     Condition = ParseExpression(node.ChildNodes[1]),
                     Block = ParseDoBlock(node.ChildNodes[2])
                 };
@@ -433,6 +441,7 @@ namespace NetLua
                 If.Block = block;
                 If.Condition = condition;
                 If.ElseIfs = new List<Ast.IfStat>();
+				If.Span = node.Span;
 
                 ParseTreeNode ElseifNode = node.ChildNodes[4];
                 ParseTreeNode ElseNode = node.ChildNodes[5];
@@ -440,7 +449,8 @@ namespace NetLua
                 while (ElseifNode.ChildNodes.Count != 0)
                 {
                     var childnode = ElseifNode.ChildNodes[0];
-                    Ast.IfStat elseif = new Ast.IfStat();
+					Ast.IfStat elseif = new Ast.IfStat();
+					elseif.Span = childnode.Span;
                     elseif.Condition = ParseExpression(childnode.ChildNodes[1]);
                     elseif.Block = ParseBlock(childnode.ChildNodes[3]);
 
@@ -468,15 +478,17 @@ namespace NetLua
 
                 Ast.Block block = ParseBlock(chunkNode);
                 Ast.FunctionDefinition def = new Ast.FunctionDefinition();
+				def.Span = node.Span;
                 def.Arguments = new List<Ast.Argument>();
 
                 var nameNode = node.ChildNodes[2];
                 if (nameNode.ChildNodes.Count > 0)
                 {
-                    def.Arguments.Add(new Ast.Argument() { Name = "self" });
+					def.Arguments.Add(new Ast.Argument() { Span = nameNode.ChildNodes[0].Span, Name = "self" });
                     expr = new Ast.Variable()
                     {
                         Name = nameNode.ChildNodes[0].Token.ValueString,
+						Span = nameNode.ChildNodes[0].Span,
                         Prefix = expr
                     };
                 }
@@ -486,8 +498,9 @@ namespace NetLua
                     argsNode = argsNode.ChildNodes[0];
                     while (argsNode.ChildNodes.Count > 0)
                     {
-                        string ident = argsNode.ChildNodes[0].Token.ValueString;
-                        def.Arguments.Add(new Ast.Argument() { Name = ident });
+						var argsChildNode = argsNode.ChildNodes[0];
+                        string ident = argsChildNode.Token.ValueString;
+						def.Arguments.Add(new Ast.Argument() { Span = argsChildNode.Span, Name = ident });
                         if (argsNode.ChildNodes.Count == 1)
                             break;
                         argsNode = argsNode.ChildNodes[1];
@@ -496,6 +509,7 @@ namespace NetLua
                 Ast.Assignment assign = new Ast.Assignment();
                 assign.Variables.Add(expr);
                 assign.Expressions.Add(def);
+				assign.Span = node.Span;
                 return assign;
             }
             throw new Exception("Invalid FunctionDecl node");
@@ -522,7 +536,8 @@ namespace NetLua
                 return new Ast.UnaryExpression()
                 {
                     Expression = expr,
-                    Operation = op
+                    Operation = op,
+					Span = node.Span
                 };
             }
             throw new Exception("Invalid UnaryExpr node");
@@ -547,8 +562,9 @@ namespace NetLua
                     argsNode = argsNode.ChildNodes[0];
                     while (argsNode.ChildNodes.Count > 0)
                     {
-                        string ident = argsNode.ChildNodes[0].Token.ValueString;
-                        def.Arguments.Add(new Ast.Argument() { Name = ident });
+						var argsNodeChild = argsNode.ChildNodes[0];
+                        string ident = argsNodeChild.Token.ValueString;
+						def.Arguments.Add(new Ast.Argument() { Name = ident, Span = argsNodeChild.Span });
                         if (argsNode.ChildNodes.Count == 1)
                             break;
                         argsNode = argsNode.ChildNodes[1];
@@ -594,7 +610,7 @@ namespace NetLua
                 if (node.ChildNodes.Count == 1)
                 {
                     string name = node.ChildNodes[0].Token.ValueString;
-                    return new Ast.Variable() { Name = name };
+					return new Ast.Variable() { Span = node.ChildNodes[0].Span, Name = name };
                 }
                 else
                 {
@@ -602,12 +618,12 @@ namespace NetLua
                     if (node.ChildNodes[1].Term.Name == "Expression")
                     {
                         Ast.IExpression index = ParseExpression(node.ChildNodes[1]);
-                        return new Ast.TableAccess() { Expression = prefix, Index = index };
+						return new Ast.TableAccess() { Span = node.ChildNodes[0].Span, Expression = prefix, Index = index };
                     }
                     else
                     {
                         string name = node.ChildNodes[1].Token.ValueString;
-                        return new Ast.Variable() { Name = name, Prefix = prefix };
+						return new Ast.Variable() { Span = node.ChildNodes[0].Span, Name = name, Prefix = prefix };
                     }
                 }
             }
@@ -626,6 +642,7 @@ namespace NetLua
                 {
                     var child = node.ChildNodes[0];
                     Ast.TableConstructor t = new Ast.TableConstructor();
+					t.Span = node.Span;
                     t.Values = new Dictionary<Ast.IExpression, Ast.IExpression>();
                     
                     int i = 1;
@@ -638,7 +655,7 @@ namespace NetLua
 
                         if (value.ChildNodes.Count == 1)
                         {
-                            t.Values.Add(new Ast.NumberLiteral() { Value = i }, ParseExpression(value.ChildNodes[0]));
+							t.Values.Add(new Ast.NumberLiteral() { Span = value.ChildNodes[0].Span, Value = i }, ParseExpression(value.ChildNodes[0]));
                             i++;
                         }
                         else
@@ -647,7 +664,7 @@ namespace NetLua
 
                             Ast.IExpression key;
                             if (prefix.ChildNodes[0].Term.Name == "identifier")
-                                key = new Ast.StringLiteral() { Value = prefix.ChildNodes[0].Token.ValueString };
+								key = new Ast.StringLiteral() { Span = prefix.Span, Value = prefix.ChildNodes[0].Token.ValueString };
                             else
                                 key = ParseExpression(prefix.ChildNodes[0]);
 
@@ -676,21 +693,21 @@ namespace NetLua
                 ParseTreeNode child = node.ChildNodes[0];
                 if (child.Token != null && child.Token.Terminal is NumberLiteral)
                 {
-                    return new Ast.NumberLiteral() { Value = (child.Token.Value is double ? (double)(child.Token.Value) : (int)(child.Token.Value)) };
+					return new Ast.NumberLiteral() { Span = child.Span, Value = (child.Token.Value is double ? (double)(child.Token.Value) : (int)(child.Token.Value)) };
                 }
                 else if (child.Token != null && child.Token.Terminal is StringLiteral)
                 {
-                    return new Ast.StringLiteral() { Value = (string)(child.Token.Value) };
+					return new Ast.StringLiteral() { Span = child.Span, Value = (string)(child.Token.Value) };
                 }
                 else if (child.Token != null && child.Token.Terminal is KeyTerm)
                 {
                     string val = child.Token.ValueString;
-                    if (val == "true")
-                        return new Ast.BoolLiteral() { Value = true };
-                    else if (val == "false")
-                        return new Ast.BoolLiteral() { Value = false };
-                    else if (val == "nil")
-                        return new Ast.NilLiteral();
+					if (val == "true")
+						return new Ast.BoolLiteral() { Span = child.Span, Value = true };
+					else if (val == "false")
+						return new Ast.BoolLiteral() { Span = child.Span, Value = false };
+					else if (val == "nil")
+						return new Ast.NilLiteral() { Span = child.Span };
                 }
                 else if (child.Term != null && child.Term.Name == "Prefix")
                 {
@@ -775,11 +792,12 @@ namespace NetLua
                 if (type.Term.Name == "NumericFor")
                 {
                     var cycle = new Ast.NumericFor();
+					cycle.Span = node.Span;
                     cycle.Block = block;
                     cycle.Variable = type.ChildNodes[0].Token.ValueString;
                     cycle.Var = ParseExpression(type.ChildNodes[1]);
                     cycle.Limit = ParseExpression(type.ChildNodes[2]);
-                    cycle.Step = new Ast.NumberLiteral() { Value = 1 };
+					cycle.Step = new Ast.NumberLiteral() { Span = new SourceSpan(cycle.Limit.Span.Location, 0), Value = 1 };
                     if (type.ChildNodes[3].ChildNodes.Count > 0)
                     {
                         var child = type.ChildNodes[3].ChildNodes[0];
@@ -790,7 +808,7 @@ namespace NetLua
                 }
                 else
                 {
-                    var cycle = new Ast.GenericFor();
+					var cycle = new Ast.GenericFor() { Span = node.Span };
                     cycle.Block = block;
 
                     var nameList = type.ChildNodes[0];
