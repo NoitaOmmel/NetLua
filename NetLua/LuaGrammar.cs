@@ -21,7 +21,11 @@ namespace NetLua
             Terminal Identifier = new IdentifierTerminal("identifier");
             Terminal SingleString = new StringLiteral("string", "'", StringOptions.AllowsAllEscapes);
             Terminal DoubleString = new StringLiteral("string", "\"", StringOptions.AllowsAllEscapes);
-            Terminal Number = new NumberLiteral("number", NumberOptions.AllowSign);
+
+            var number = new NumberLiteral("number", NumberOptions.AllowSign);
+            number.AddPrefix("0x", NumberOptions.Hex);
+            number.AddSuffix("LL", TypeCode.Int64);
+            Terminal Number = number;
 
             Terminal LineComment = new CommentTerminal("Comment", "--", "\n", "\r");
 			Terminal LongComment = new CommentTerminal("LongComment", "--[[", "]]");
@@ -69,14 +73,18 @@ namespace NetLua
 
             NonTerminal TableConstruct = new NonTerminal("TableConstruct");
             NonTerminal TableConstructFragment = new NonTerminal("TableConstructFragment");
+
+            NonTerminal Varargs = new NonTerminal("Varargs");
             #endregion
 
             #region Fragments
+            Varargs.Rule = "...";
+
             CallArgumentsFragment.Rule = Expression | Expression + "," + CallArgumentsFragment;
 
             CallArguments.Rule = "(" + (CallArgumentsFragment | Empty) + ")";
 
-            DefArgumentsFragment.Rule = Identifier | Identifier + "," + DefArgumentsFragment;
+            DefArgumentsFragment.Rule = (Varargs | Identifier) | (Varargs | Identifier) + "," + DefArgumentsFragment;
 
             DefArguments.Rule = "(" + (DefArgumentsFragment | Empty) + ")";
 
@@ -127,11 +135,8 @@ namespace NetLua
                 ) | Empty;
             TableConstruct.Rule = "{" + TableConstructFragment + "}";
 
-            var varargs = new NonTerminal("Varargs");
-            varargs.Rule = "...";
-
             Expression.Rule =
-                 varargs
+                 Varargs
                 | Prefix
                 | OrOp
                 | UnaryExpr

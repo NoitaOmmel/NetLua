@@ -325,20 +325,22 @@ namespace NetLua
                     var argsNode = child.ChildNodes[2];
                     var blockNode = child.ChildNodes[3];
 
-                    assign.Names.Add(child.ChildNodes[1].Token.ValueString);
+
                     var func = new Ast.FunctionDefinition();
 					func.Span = node.Span;
 
                     if (argsNode.ChildNodes.Count > 0)
                     {
                         argsNode = argsNode.ChildNodes[0];
-                        while (argsNode.ChildNodes.Count > 0)
-                        {
-                            string ident = argsNode.ChildNodes[0].Token.ValueString;
-							func.Arguments.Add(new Ast.Argument() { Span = argsNode.Span, Name = ident });
-                            if (argsNode.ChildNodes.Count == 1)
-                                break;
-                            argsNode = argsNode.ChildNodes[1];
+                        if (argsNode.ChildNodes.Count > 0) {
+                            argsNode = argsNode.ChildNodes[0];
+                            while (argsNode.ChildNodes.Count > 0) {
+                                string ident = argsNode.ChildNodes[0].Token.ValueString;
+                                func.Arguments.Add(new Ast.Argument() { Span = argsNode.Span, Name = ident });
+                                if (argsNode.ChildNodes.Count == 1)
+                                    break;
+                                argsNode = argsNode.ChildNodes[1];
+                            }
                         }
                     }
 
@@ -499,13 +501,18 @@ namespace NetLua
                     while (argsNode.ChildNodes.Count > 0)
                     {
 						var argsChildNode = argsNode.ChildNodes[0];
-                        string ident = argsChildNode.Token.ValueString;
-						def.Arguments.Add(new Ast.Argument() { Span = argsChildNode.Span, Name = ident });
+                        if (argsChildNode.Token == null) {
+                            def.Arguments.Add(new Ast.Argument() { Span = argsChildNode.Span, Name = "..." });
+                        } else {
+                            string ident = argsChildNode.Token.ValueString;
+                            def.Arguments.Add(new Ast.Argument() { Span = argsChildNode.Span, Name = ident });
+                        }
                         if (argsNode.ChildNodes.Count == 1)
                             break;
                         argsNode = argsNode.ChildNodes[1];
                     }
                 }
+
                 Ast.Assignment assign = new Ast.Assignment();
                 assign.Variables.Add(expr);
                 assign.Expressions.Add(def);
@@ -563,8 +570,12 @@ namespace NetLua
                     while (argsNode.ChildNodes.Count > 0)
                     {
 						var argsNodeChild = argsNode.ChildNodes[0];
-                        string ident = argsNodeChild.Token.ValueString;
-						def.Arguments.Add(new Ast.Argument() { Name = ident, Span = argsNodeChild.Span });
+                        if (argsNodeChild.Token == null) {
+                            def.Arguments.Add(new Ast.Argument() { Name = "...", Span = argsNodeChild.Span });
+                        } else {
+                            string ident = argsNodeChild.Token.ValueString;
+                            def.Arguments.Add(new Ast.Argument() { Name = ident, Span = argsNodeChild.Span });
+                        }
                         if (argsNode.ChildNodes.Count == 1)
                             break;
                         argsNode = argsNode.ChildNodes[1];
